@@ -1,0 +1,107 @@
+* {
+  box-sizing: border-box;
+  font-style: normal;
+}
+
+.result-wrapper {
+  margin-top: 0px;
+  padding-left: 10px;
+  padding-top: 5px;
+}
+
+.run-btn {
+  color: #C2E1EB;
+  background-color: inherit;
+  font-size: 16px;
+  padding: 10px 15px;
+  /*display: block;*/
+  width: auto;
+  outline: 0;
+  border: none;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+
+.cm-theme-light {
+  height: 100% !important;
+}
+
+#editor {
+  padding-left: 0px;
+  padding-right: 0px;
+  height: 90%;
+}
+
+.rateselection {
+  margin-left: 20px;
+}
+
+.title-text {
+  color: #C2E1EB;
+  font-weight: 700;
+}
+
+
+.container-fluid {
+  background-color: #101e2a;
+}
+
+.modal-content {
+  min-height: 100px;
+  padding: 10px;
+}
+
+.spinner-container {
+  height: 100px;
+}
+
+.border-side-bar {
+  border-left: 1px solid #24303F;
+}
+
+.border-result-box {
+  border-top: 1px solid #24303F;
+}
+
+.cm-activeLineGutter {
+  color: #747983 !important;
+}
+
+.cm-gutterElement {
+  color: #4B5161;
+  font-size: 0.9em;
+  font-family: "Menlo", monospace !important;
+}
+
+/*set font of editor*/
+.cm-editor .cm-content {
+  font-family: "Menlo", monospace;
+  height: 100%;
+}
+
+/*background of editor*/
+.ͼo {
+  background-color: #101e2a;
+}
+
+/*set color of gutter*/
+.ͼo .cm-gutters {
+  background-color: #101e2a;
+  color: #101e2a;
+}
+
+.ͼo .cm-activeLineGutter {
+  background-color: #101e2a;
+}
+
+.logging-btn {
+  height: 50px;
+  width: 140px;
+  font-size: 14px;
+  font-weight: 700 !important;
+}
+
+.welcome-txt {
+  font-size: 14px;
+  color: #2C4059;
+}
