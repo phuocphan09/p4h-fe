@@ -12,7 +12,7 @@ class RunActionLogApis {
     runActionLog = (action: string, metadata="{}") => {
         if ((!cookies.get('user_accept_logging') 
             || cookies.get('user_accept_logging') == 'false')
-            && action !== '0000'
+            && (!['0000', '0003'].includes(action)) // not load or decline logging
         ) {
             return;
         }

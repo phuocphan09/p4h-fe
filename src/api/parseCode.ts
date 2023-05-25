@@ -7,11 +7,11 @@ interface IResponse {
 }
 
 class ParseCodeApis {
-  analyzeCode = (lineCodeList: string[]) => {
+  analyzeCode = (lineCodeList: string[], activeLine: number) => {
     const url = '/parse-code/';
     const data = {
       input_lines: lineCodeList,
-      isActive: 0
+      isActive: activeLine
     }
     return axiosClient.post<any, IResponse>(url, data);
   };

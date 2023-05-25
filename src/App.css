@@ -10,10 +10,10 @@
 }
 
 .run-btn {
-  color: #C2E1EB;
+  color: #C2E1EB !important;
   background-color: inherit;
   font-size: 16px;
-  padding: 10px 15px;
+  padding: 10px 15px !important;
   /*display: block;*/
   width: auto;
   outline: 0;
@@ -104,4 +104,12 @@
 .welcome-txt {
   font-size: 14px;
   color: #2C4059;
+}
+
+.outline-list.list-group:focus {
+  outline: none;
+}
+
+#editor .cm-editor.cm-focused {
+  outline: none;
 }

@@ -1,6 +1,6 @@
 /* eslint-disable react/button-has-type */
 import React, { useEffect, useState, useRef } from 'react';
-import { Modal, Container, Row, Col, Spinner, Button } from 'react-bootstrap';
+import { Modal, Container, Row, Col, Spinner, Button, ListGroup } from 'react-bootstrap';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BsFillPlayFill, BsSearch } from 'react-icons/bs';
@@ -15,85 +15,113 @@ import runActionLogApis from './api/RunActionLogApis';
 import OutlineTree from './components/OutlineTree';
 import NavigationCenter from './components/NavigationCenter';
 import TreeForOpenAI from './components/TreeForOpenAI';
+import { environment } from './environments/environment';
+import describeLineApis from "./api/describeLineAPI";
 
 const menuLst = [
   {
     title: 'Chạy',
     funcName: 'RunPythonScript',
-    keyword: ['run', 'chạy', 'Run', 'Chạy']
+    keyword: ['run', 'chạy', 'Run', 'Chạy'],
+    desc: null
   },
   {
-    title: 'Đọc lại kết quả',
+    title: 'Đọc kết quả',
     funcName: 'repeatVoice',
-    keyword: ['Repeat voice', 'repeat voice', 'Phát lại', 'phát lại']
+    keyword: ['Đọc kết quả', 'output', 'return', 'read'],
+    desc: null
   },
   {
     title: 'Tìm hiểu cấu trúc code',
     funcName: 'analyzeCode',
-    keyword: ['Outline', 'outline', 'tree', 'cấu trúc mã nguồn']
+    keyword: ['Tìm hiểu cấu trúc code', 'Outline', 'outline', 'tree', 'cấu trúc mã nguồn'],
+    desc: 'Cấu trúc code đang được hiển thị. Con trỏ đang đứng tại vị trí hiện tại. Hãy sử dụng phím lên và xuống để tìm hiểu cấu trúc.'
   },
-  ,
   {
-    title: 'Giải thích code',
+    title: 'Giải thích code bằng ChatGPT',
     funcName: 'analyzeCodeForExplain',
-    keyword: ['Outline', 'outline', 'tree', 'cấu trúc mã nguồn']
+    keyword: ['Giải thích code bằng ChatGPT', 'Explain', 'Chat GPT', 'ChatGPT'],
+    desc: 'Cấu trúc code đang được hiển thị. Con trỏ đang đứng tại vị trí hiện tại. Hãy sử dụng phím lên và xuống để tìm hiểu cấu trúc, và nhấn enter để yêu cầu phần mềm giải thích.'
   },
   {
     title: 'Quay về khu vực lập trình',
-    funcName: 'openUpcomingFeatureDialog',
-    keyword: ['Outline', 'outline', 'tree', 'cấu trúc mã nguồn']
+    funcName: 'returnToEditor',
+    keyword: ['Quay về khu vực lập trình'],
+    desc: 'Con trỏ đã được đưa về khu vực lập trình'
   },
   {
-    title: 'Định vị dòng code hiện tại',
+    title: 'Mô tả vị trí của dòng code hiện tại',
+    funcName: 'handleNavModalState', // TODO: hard code for demo
+    keyword: ['Mô tả vị trí của dòng code hiện tại'],
+    desc: 'Bạn hãy sử dụng phím lên xuống để chọn vị trí mà bạn muốn được miêu tả'
+  },
+  {
+    title: 'Đọc lại',
     funcName: 'openUpcomingFeatureDialog',
-    keyword: ['Outline', 'outline', 'tree', 'cấu trúc mã nguồn']
+    keyword: ['Đọc lại', 'Phát lại', 'repeat'],
+    desc: null
   },
   {
     title: 'Tìm kiếm và thay thế',
     funcName: 'openUpcomingFeatureDialog',
-    keyword: ['Outline', 'outline', 'tree', 'cấu trúc mã nguồn']
+    keyword: ['Tìm kiếm và thay thế'],
+    desc: null
   },
   {
     title: 'Đi đến dòng có số thứ tự',
     funcName: 'openUpcomingFeatureDialog',
-    keyword: ['Outline', 'outline', 'tree', 'cấu trúc mã nguồn']
-  },,
+    keyword: ['Đi đến dòng có số thứ tự'],
+    desc: null
+  },
   {
     title: 'Tải về file code có định dạng .py',
     funcName: 'openUpcomingFeatureDialog',
-    keyword: ['Outline', 'outline', 'tree', 'cấu trúc mã nguồn']
-  },,
+    keyword: ['Tải về file code có định dạng .py'],
+    desc: null
+  },
   {
     title: 'Upload file code có định dạng .py',
     funcName: 'openUpcomingFeatureDialog',
-    keyword: ['Outline', 'outline', 'tree', 'cấu trúc mã nguồn']
+    keyword: ['Upload file code có định dạng .py'],
+    desc: null
   },
   {
     title: 'Điều chỉnh tốc độ phát âm',
     funcName: 'openUpcomingFeatureDialog',
-    keyword: ['Outline', 'outline', 'tree', 'cấu trúc mã nguồn']
-  },{
-    title: 'Bật/Tắt chế độ tự động báo lỗi khi đang gõ',
+    keyword: ['Điều chỉnh tốc độ phát âm'],
+    desc: null
+  },
+  {
+    title: 'Bật hoặc Tắt chế độ tự động báo lỗi khi đang gõ',
     funcName: 'openUpcomingFeatureDialog',
-    keyword: ['Outline', 'outline', 'tree', 'cấu trúc mã nguồn']
-  },{
+    keyword: ['Bật hoặc Tắt chế độ tự động báo lỗi khi đang gõ'],
+    desc: null
+  },
+  {
     title: 'Cài đặt phím tắt',
     funcName: 'openUpcomingFeatureDialog',
-    keyword: ['Outline', 'outline', 'tree', 'cấu trúc mã nguồn']
-  },{
+    keyword: ['Cài đặt phím tắt'],
+    desc: null
+  },
+  {
     title: 'Giới thiệu cách hoạt động của các tính năng',
     funcName: 'openUpcomingFeatureDialog',
-    keyword: ['Outline', 'outline', 'tree', 'cấu trúc mã nguồn']
-  },{
+    keyword: ['Giới thiệu cách hoạt động của các tính năng'],
+    desc: null
+  },
+  {
     title: 'Yêu cầu hỗ trợ',
     funcName: 'openUpcomingFeatureDialog',
-    keyword: ['Outline', 'outline', 'tree', 'cấu trúc mã nguồn']
+    keyword: ['Yêu cầu hỗ trợ'],
+    desc: null
   }
 ];
 
 function App() {
   const [code, setCode] = useState('');
   const [result, setResult] = useState('');
+  const [typingResult, setTypingResult] = useState(false)
+  // let typingResult = false;
   const [repeatState, setRepeatState] = useState({ text: '', lang: ''});
   // const [synthRate, setSynthRate] = useState(1);
   const [lineError, setLineError] = useState(0);
@@ -104,24 +132,42 @@ function App() {
   const [showWelcomeModal, setShowWelcomeModal] = useState(true);
   const [showUpcomingFeatureDialog, setShowUpcomingFeatureDialog] = useState(false);
   const [showLoadingModal, setShowLoadingModal] = useState(false);
-  const [outlineItems, setOutlineItems] = useState([]);
-  const [outlineItemsExplain, setOutlineItemsExplain] = useState([]);
-  const [lintError, setLintError] = useState('');
-  const [lineBeforeInfo, setLineBeforeInfo] = useState({ lineNo: -1, charNo: -1, errorStr: ''});
+  const [outlineItems, setOutlineItems] = useState({ active_line: 0, parsed_line: []});
+  const [outlineItemsExplain, setOutlineItemsExplain] = useState({ active_line: 0, parsed_line: []});
+  // const [describeLine, setDescribeLine] = useState(false);
+  const [toggleEditor, setToggleEditor] = useState(true);
+  const currLineNo = useRef(0);
+  const editorRef = useRef<any>();
+  // const [lintError, setLintError] = useState('');
+  // const [lineBeforeInfo, setLineBeforeInfo] = useState({ lineNo: 0, charNo: 0, errorStr: ''});
+  // const [test_linenobeforeerror, set_test_linenobeforeerror] = useState(0);
   const cookies = new Cookies();
 
   const codeRef = useRef(code);
 
+  let lineBeforeInfo = { lineNo: 0, charNo: 0, errorStr: ''};
+  let describeLine = false; // set to true to use the feature TODO: add toggle to nav center
+
   /*----------------Chuc nang doc text va cap nhat gia tri Code Editor-----------------*/
   const synth = window.speechSynthesis;
   const defaultLang = 'vi-VN';
-  const defaultRate = 1; // for blind: rate 2
+  const defaultRate = 1.2; // for blind: rate 2
   
-  const SpeakSpeech = (text: string, lang = defaultLang, rate = defaultRate) => {
-    const utterThis = new SpeechSynthesisUtterance(text);
+  const SpeakSpeech = (text: string, wait=false, lang = defaultLang, rate = defaultRate, speakSpecialChar=false) => {
+    if (!wait && synth.speaking) {
+      synth.cancel();
+    }
+
+    let speakText = text;
+    if (speakSpecialChar) {
+      speakText = fromStringtoFriendlyString(text, lang);
+    }
+
+    const utterThis = new SpeechSynthesisUtterance(speakText);
     utterThis.lang = lang;
     utterThis.rate = rate;
     synth.speak(utterThis);
+
   };
 
   // const handleRateChange = (e: any) => {
@@ -129,13 +175,14 @@ function App() {
   // };
 
   const repeatVoice = () => {
-    SpeakSpeech(repeatState.text, repeatState.lang);
+    SpeakSpeech(repeatState.text, false, repeatState.lang);
   }
 
-  const UpdateResult = (value: string, lang = defaultLang, doSpeak = true) => {
+  const UpdateResult = (value: string, wait=false, lang = defaultLang, doSpeak = true, isTyping=false) => {
+    setTypingResult(isTyping);
     setResult(value);
     if (doSpeak) {
-      SpeakSpeech(value, lang);
+      SpeakSpeech(value, wait, lang, defaultRate, true);
       setRepeatState({ text: value, lang });
     }
   };
@@ -148,55 +195,66 @@ function App() {
   /*---------------------------------------------------*/
   /*----------------Chuc nang Run code-----------------*/
   const RunPythonScript = async () => {
+    await runActionLogApis.runActionLog('0001');
     SpeakSpeech('Đang xử lý');
     const resData = await runScriptApis.runPythonScript(codeRef.current);
     if (resData.error === 0) {
       SpeakSpeech('Hoàn thành. Kết quả là\n');
-      UpdateResult(resData.data);
+      UpdateResult(resData.data, true);
       setLineError(0);
       setCharError(0);
     } else if (resData.error === 23) {
-      SpeakSpeech('Lỗi\n');
-      UpdateResult(`${resData.data.error_class}: ${resData.data.detail}`, 'en-US');
+      SpeakSpeech('Hoàn thành. Có lỗi xảy ra\n');
+      UpdateResult(`${resData.data.error_class}: ${resData.data.detail}`, true, 'en-US');
       setLineError(resData.data.line_no);
       setCharError(resData.data.char_no);
     }
-    
-    await runActionLogApis.runActionLog("Run Python Script");
+    setToggleEditor(state => !state);
   };
 
   const handleRunShortCutKey = async (event: any) => {
+    const hasFocus = editorRef.current?.getFocusStateEditor();
+
     if (event.keyCode === 10 || event.keyCode === 13) {
       event.preventDefault();
       if (event.shiftKey) {
+        // shift + enter --> run code
         await RunPythonScript();
-      } else {
+      } else if (!showNavModal && hasFocus) {
+        // enter
         const codeByLine = codeRef.current.split('\n');
-        const lastLineCode = codeByLine[codeByLine.length - 2];
+        const lastLineCode = codeByLine[currLineNo.current - 2];
         const compileResult = await compileCodeApis.compileCode(lastLineCode);
         if (compileResult?.data?.error_code == 1) {
-          SpeakSpeech('Dòng trước gặp lỗi, nhấn control E để quay lại vị trí gặp lỗi');
-          setLintError(`${compileResult?.data?.error_class} ${compileResult?.data?.detail}`);
-          SpeakSpeech(lintError, 'en-US');
-          setLineBeforeInfo({ lineNo: compileResult.data.line_no[0], charNo: compileResult.data.char_no[0], errorStr: `${compileResult?.data?.error_class} ${compileResult?.data?.detail}`});
-        } else {
-          setLineBeforeInfo({ lineNo: 0, charNo: 0, errorStr: ''});
-        }
 
+          // set line error
+          lineBeforeInfo = { lineNo: codeByLine.length - 1, charNo: compileResult.data.char_no[0], errorStr: `${compileResult?.data?.error_class} ${compileResult?.data?.detail}`};
+          // setLineBeforeInfo({ lineNo: codeByLine.length - 1, charNo: compileResult.data.char_no[0], errorStr: `${compileResult?.data?.error_class} ${compileResult?.data?.detail}`});
+
+          // SpeakSpeech('Dòng trước gặp lỗi, nhấn command E để quay lại vị trí gặp lỗi');
+          const message = Array({text: 'Dòng trước gặp lỗi, nhấn ', lang: 'vi-VN'}, {text: 'Command E', lang: 'en-US'}, {text: 'để quay lại vị trí gặp lỗi', lang: 'vi-VN'})
+          SpeakSpeechDiffLang(message);
+
+        } else {
+          // setLineBeforeInfo({ lineNo: 0, charNo: 0, errorStr: ''});
+          lineBeforeInfo = { lineNo: 0, charNo: 0, errorStr: ''};
+        }
         await runActionLogApis.runActionLog("Compile Code");
       }
     }
 
+    // control e
     if ((event.ctrlKey || event.metaKey) && event.keyCode == 69) {
-      if (lineBeforeInfo.lineNo != -1) {
+      if (lineBeforeInfo.lineNo != 0) {
         event.preventDefault();
         setCharError(lineBeforeInfo.charNo);
         setLineError(lineBeforeInfo.lineNo);
-        SpeakSpeech(`Bạn đã được đưa về vị trí có lỗi ở dòng ${lineBeforeInfo.lineNo} ký tự ${lineBeforeInfo.charNo}`);
-        SpeakSpeech(lineBeforeInfo.errorStr, 'en-US');
+        SpeakSpeech(`Bạn đã được đưa về vị trí có lỗi ở dòng ${lineBeforeInfo.lineNo} ký tự ${lineBeforeInfo.charNo}.\n Dòng này bị lỗi sau`);
+        SpeakSpeech(lineBeforeInfo.errorStr, true, 'en-US', defaultRate, true);
       }
     }
 
+    // show modal behavior
     if (showWelcomeModal) {
       if (event.keyCode == 89) {
         saveLoggingState(true);
@@ -204,9 +262,34 @@ function App() {
         saveLoggingState(false);
       }
     }
+
+    // (command + K)
+    if (((event.ctrlKey || event.metaKey) && event.keyCode === 75)) {
+      console.log(event.keyCode);
+      event.preventDefault();
+      handleNavModalState();
+    }
+
+    // describe line
+    // console.log(`in shortcut: ${describeLine}`);
+    if (describeLine && hasFocus) {
+      if (event.keyCode == 38 || event.keyCode == 40) { // 38 is up; 40 is down
+        await describeCurrentLine();
+      } else {
+        // setDescribeLine(false);
+        // toggleDescribeLine();
+      }
+    }
   }
 
   useEffect(() => {
+    const getSamplePythonCode = async () => {
+      const sampleCode = await runScriptApis.getSampleCode();
+      if (sampleCode.error == 0) {
+        codeRef.current = sampleCode.data;
+        setCode(sampleCode.data);
+      }
+    }
     const saveLogForWelcome = async () => {
       await runActionLogApis.runActionLog('0000');
     }
@@ -218,6 +301,12 @@ function App() {
       // SpeakSpeech('P4H là dự án phần mềm lập trình dành cho người khiếm thị đầu tiên tại Việt Nam. Hiện tại dự án đang trong giai đoạn thử nghiệm. Để có thể cập nhật thêm nhiều tính năng mới, chúng tôi mong muốn được lưu lại dữ liệu về các thao tác sử dụng của bạn (ví dụ như những trường hợp bạn gặp sự cố). Mọi dữ liệu được sẽ được lưu trữ và bảo mật dưới dạng ẩn danh, nghĩa là P4H hoàn toàn không biết danh tính của bạn. Vui lòng nhấn phím Y nếu bạn cho phép. Nếu không, vui lòng nhấn phím N để tiếp tục sử dụng chương trình.');
     }
 
+    if (!cookies.get('api_token')) {
+      cookies.set('api_token', environment.token, { httpOnly: true });
+    }
+    
+    getSamplePythonCode();
+
     document.addEventListener('keydown', handleRunShortCutKey);
 
     return () => {
@@ -226,36 +315,78 @@ function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /*----------------------------------------------------------*/
-  /*----------------Chuc nang Giai thich code-----------------*/
-  const CallOpenAI = async () => {
-    const selectedCode = window.getSelection()!.toString();
-    if (selectedCode !== null) {
+  /*--------------------------------------------------*/
+  /*------------Describe line-------------------------*/
+  const toggleDescribeLine = (value: boolean) => {
+    describeLine = value;
+    console.log(describeLine);
+    // setDescribeLine(!describeLine);
+  }
 
-      // for debugging
+  const describeCurrentLine = async() => {
 
-      // start
-      UpdateResult('Đang xử lý...');
+    const currentActiveLine = Array.prototype.slice.call( document.querySelector('.cm-content')?.children ).indexOf(document.querySelector('.cm-activeLine'));
+    const response = await describeLineApis.describeCode(codeRef.current.split('\n'), currentActiveLine);
+    if (response.error === 0) {
+      const describeLineData = response.data;
+      const lineContent =  codeRef.current.split('\n')[currentActiveLine].trim();
 
-      // call API
-      const resData = await runOpenAIApis.runOpenAIScript(selectedCode);
-      if (resData.error === 0) {
-        UpdateResult(resData.data);
+      // skip if empty line
+      if (lineContent === '') {
+        return;
       }
-    } else {
-      alert('Nothing is selected');
+
+      // construct message
+      const message = Array(
+          {text: lineContent, lang: 'en-US'}, // trim() is like strip() on Python
+          {text: 'Thụt lề ' + describeLineData.indentation + ' ô\n', lang: 'vi-VN'},
+        );
+
+      // add direct parent
+      if (describeLineData.directParent !== null) {
+        message.push({text: 'Nằm trong', lang: 'vi-VN'})
+        message.push({text: describeLineData.directParent.dest_label, lang: 'en-US'})
+        message.push({text: 'cách đó ' + describeLineData.directParent.dest_distance + ' dòng.\n', lang: 'vi-VN'})
+      }
+
+      // add highest parent
+      if (describeLineData.highestParent !== null) {
+        // only speak if the highest parent differs from the direct parent
+        if (describeLineData.highestParent.dest_distance !== describeLineData.directParent.dest_distance) {
+          message.push({text: 'Và nằm trong', lang: 'vi-VN'})
+          message.push({text: describeLineData.highestParent.dest_label, lang: 'en-US'})
+          message.push({text: 'cách đó ' + describeLineData.highestParent.dest_distance + ' dòng.\n', lang: 'vi-VN'})
+        }
+      }
+
+      // speak the message
+      SpeakSpeechDiffLang(message, true);
     }
-  };
+  }
+
+  // Speak a sentence containing multiple languages
+  const SpeakSpeechDiffLang = (input: any, speakSpecialChar=false) => {
+    for (let i = 0; i < input.length; i++) {
+      if (i === 0){
+        SpeakSpeech(input[i].text, false, input[i].lang, defaultRate, speakSpecialChar);
+      } else {
+        SpeakSpeech(input[i].text, true, input[i].lang, defaultRate, speakSpecialChar);
+      }
+
+    }
+  }
 
   /*--------------------------------------------------*/
   /*------------Phan tich cau truc code---------------*/
   const analyzeCode = async () => {
     setShowOutlineModal(true);
-    const outLineData = await parseCodeApis.analyzeCode(code.split('\n'));
+    const currentActiveLine = Array.prototype.slice.call( document.querySelector('.cm-content')?.children ).indexOf(document.querySelector('.cm-activeLine'));
+    console.log(currentActiveLine);
+    const outLineData = await parseCodeApis.analyzeCode(code.split('\n'), currentActiveLine);
     if (outLineData.error == 0) {
       setOutlineItems(outLineData.data);
     } else {
-      setOutlineItems([]);
+      setOutlineItems({ active_line: 0, parsed_line: []});
     }
   }
 
@@ -267,39 +398,43 @@ function App() {
     setShowOutlineModal(false);
     setTimeout(() => {
       setLineError(lineNo);
-      setCharError(0);
+      setCharError(1);
     }, 500);
   }
   /*--------------------------------------------------*/
   /*--------Giai thich code theo outline tree---------*/
   const analyzeCodeForExplain = async () => {
     setShowOutlineExplainModal(true);
-    const outLineData = await parseCodeApis.analyzeCode(code.split('\n'));
+    const currentActiveLine = Array.prototype.slice.call( document.querySelector('.cm-content')?.children ).indexOf(document.querySelector('.cm-activeLine'));
+    const outLineData = await parseCodeApis.analyzeCode(code.split('\n'), currentActiveLine);
     if (outLineData.error == 0) {
-      if (outLineData.data?.length) {
+      if (outLineData.data.parsed_line?.length) {
         setOutlineItemsExplain(outLineData.data);
       } else {
-        setOutlineItemsExplain([]);
+        setOutlineItemsExplain({ active_line: 0, parsed_line: []});
         UpdateResult('Không thể tạo cấu trúc mã nguồn do mã nguồn không phân cấp');
       }
     } else {
-      setOutlineItemsExplain([]);
+      setOutlineItemsExplain({ active_line: 0, parsed_line: []});
     }
 
     await runActionLogApis.runActionLog("Parse Code");
   }
 
   const explainCodeRange = async (startLineIdx: number, endLineIdx: number) => {
+    // reset the resultbox such that the typing with type again
+    setTypingResult(false);
+
     setShowOutlineExplainModal(state => !state);
     setShowLoadingModal(true);
-    SpeakSpeech('Đang xử lý...');
+    SpeakSpeech('Đang xử lý...', false);
     const codeBlockArr = code.split('\n').slice(startLineIdx, endLineIdx + 1);
     const codeBlockStr = codeBlockArr.join('\n');
     const resData = await runOpenAIApis.runOpenAIScript(codeBlockStr);
     if (resData.error === 0) {
-      UpdateResult(resData.data);
+      UpdateResult(resData.data, true, defaultLang, true, true);
     } else {
-      UpdateResult('Có lỗi xảy ra hoặc không thể giải thích đoạn code này!');
+      UpdateResult('Có lỗi xảy ra hoặc không thể giải thích đoạn code này!', true);
     }
     setShowLoadingModal(false);
     await runActionLogApis.runActionLog("Explain Code By OpenAI");
@@ -311,13 +446,21 @@ function App() {
   /*--------------------------------------------------*/
   /*--------------Navigation Center-------------------*/
   const handleNavModalState = () => {
+    if (!showNavModal) {
+      SpeakSpeech('Hãy gõ tên tính năng bạn muốn tìm kiếm, và dùng phím lên xuống để lựa chọn tính năng')
+    }
     setShowNavModal(state => !state);
   }
 
-  const runFuncFromNavigation = async (funcName: string) => {
+  const runFuncFromNavigation = async (menu: any) => {
+
+    // read instruction
+    if (menu.desc) { SpeakSpeech(menu.desc); }
+
+    // open modal
     setShowNavModal(state => !state);
     
-    switch (funcName) {
+    switch (menu.funcName) {
       case 'repeatVoice':
         repeatVoice();
         break;
@@ -327,10 +470,6 @@ function App() {
           await RunPythonScript();
         }, 500);
         break;
-      
-      case 'CallOpenAI':
-        await CallOpenAI();
-        break;
 
       case 'analyzeCode':
         await analyzeCode();
@@ -338,6 +477,19 @@ function App() {
       
       case 'analyzeCodeForExplain':
         await analyzeCodeForExplain();
+        break;
+
+      case 'returnToEditor':
+        setTimeout(() => {
+          setToggleEditor(state => !state);
+          const activeLine = Array.prototype.slice.call( document.querySelector('.cm-content')?.children ).indexOf(document.querySelector('.cm-activeLine')) + 1;
+          setLineError(activeLine);
+          setCharError(1);
+        }, 500); 
+        break;
+
+      case 'toggleDescribeLine':
+        toggleDescribeLine(!describeLine);
         break;
 
       case 'openUpcomingFeatureDialog':
@@ -352,6 +504,11 @@ function App() {
   /*----------------Logging---------------------------*/
   const handleCloseWelcomeModal = () => {
     setShowWelcomeModal(false);
+
+    // TODO: handle the logic for the following instruction -- currently hard coded
+    SpeakSpeech('Con trỏ đang ở vùng gõ code. Bạn hãy nhấn phím tắt');
+    SpeakSpeech('Command K', true, 'en-US');
+    SpeakSpeech('để lựa chọn bất kì tính năng nào mà bạn muốn sử dụng', true);
   }
 
   const saveLoggingState = async (state: boolean) => {
@@ -364,6 +521,32 @@ function App() {
     }
   }
   /*--------------------------------------------------*/
+
+  const fromStringtoFriendlyString = (str: string, lang: string) => {
+
+    let output = str;
+
+    const dict_map_vi = {":": "hai chấm", "+": "cộng", "-": "trừ", "*": "nhân", "/": "chia", "...": "ba chấm"};
+    const dict_map_en = {":": "colon", "+": "plus", "-": "minus", "*": "multiply", "/": "divided by", "...": "ellipsis"};
+
+    // start converting
+    if (lang === "vi-VN") {
+        for (let key in dict_map_vi) {
+          // @ts-ignore
+          output = output.replace(new RegExp('\\' + key, "g"), ' ' + dict_map_vi[key] + ' ');
+        };
+    };
+
+    if (lang === "en-US") {
+      for (let key in dict_map_en) {
+        // @ts-ignore
+        output = output.replace(new RegExp('\\' + key, "g"), ' ' + dict_map_en[key] + ' ');
+      };
+    };
+
+    return output;
+
+  }
 
   const handleCloseUpcomingFeatureDialog = () => {
     setShowUpcomingFeatureDialog(false);
@@ -378,44 +561,48 @@ function App() {
     setShowLoadingModal(false);
   }
 
+  const setCurrLineNo = (lineNo: number) => {
+    currLineNo.current = lineNo;
+  }
+
   return (
     <Container fluid className='vh-100'>
       <Row className='h-100'>
         <Col md={2} className='side-bar p-0'>
           <Row className='w-100 mx-0'>
-            <button className='run-btn text-start fw-bold' onClick={RunPythonScript}>
-              <BsFillPlayFill color='#72A24D' style={{margin: '10px'}}/> Chạy 
-            </button>
+            <ListGroup.Item aria-hidden={true} as={"div"} className='run-btn text-start fw-bold' onClick={RunPythonScript}>
+              <BsFillPlayFill color='#72A24D' style={{margin: '10px'}}/> Chạy
+            </ListGroup.Item>
           </Row>
           <Row className='w-100 mx-0'>
-            <button className='run-btn text-start fw-bold' onClick={handleNavModalState}>
+            <ListGroup.Item aria-hidden={true} as={"div"} className='run-btn text-start fw-bold' action onClick={handleNavModalState}>
               <BsSearch color='#72A24D' style={{margin: '10px'}}/> Tìm kiếm
-            </button>
+            </ListGroup.Item>
           </Row>
         </Col>
         <Col md={10} className='h-100 border-side-bar ide-content'>
           <Row className='h-50 d-flex flex-column flex-grow-1'>
-            <TextEditor code={code} onChangeCode={onChangeCode} lineError={lineError} charError={charError}/>
+            <TextEditor code={code} onChangeCode={onChangeCode} lineError={lineError} charError={charError} toggle={toggleEditor} setCurrLineNo={setCurrLineNo} ref={editorRef}/>
           </Row>
           <Row className='h-50 border-result-box d-flex flex-column flex-grow-1'>
-            <ResultBox content={result} />
+            <ResultBox content={result} isTyping={typingResult} />
           </Row>
         </Col>
       </Row>
       <Modal show={showNavModal} onHide={handleNavModalState}>
-        <NavigationCenter menuLstInit={menuLst} runFunc={runFuncFromNavigation}/>
+        <NavigationCenter menuLstInit={menuLst} runFunc={runFuncFromNavigation} SpeakSpeech={SpeakSpeech}/>
       </Modal>
       <Modal show={showOutlineModal} onHide={handleCloseOutlineModelState} >
-        { outlineItems.length 
-              ? <OutlineTree data={outlineItems} goToLine={goToLineOfOutline} /> 
+        { outlineItems.parsed_line.length 
+              ? <OutlineTree data={outlineItems} goToLine={goToLineOfOutline} SpeakSpeech={SpeakSpeech}/> 
               : <div className='spinner-container d-flex align-items-center justify-content-center'>
                   <Spinner animation="border"/>
                 </div> 
         }
       </Modal>
       <Modal show={showOutlineExplainModal} onHide={handleCloseOutlineExplainModelState} >
-        { outlineItemsExplain.length
-              ? <TreeForOpenAI data={outlineItemsExplain} setLineRange={explainCodeRange} /> 
+        { outlineItemsExplain.parsed_line.length
+              ? <TreeForOpenAI data={outlineItemsExplain} setLineRange={explainCodeRange} SpeakSpeech={SpeakSpeech}/> 
               : <div className='spinner-container d-flex align-items-center justify-content-center'>
                   <Spinner animation="border"/>
                 </div> 

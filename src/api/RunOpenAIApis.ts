@@ -10,7 +10,7 @@ interface IResponse {
 class RunOpenAIApis {
     runOpenAIScript = (text: string) => {
         const url = '/explain-code/';
-        const data = { text: `Explain in Vietnamese:\n${text}` }; // to support Vietnamese
+        const data = { text: `Giải thích đơn giản\n${text}` }; // to support Vietnamese
         return axiosClient.post<any, IResponse>(url, data);
     };
 }

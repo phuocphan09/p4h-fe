@@ -13,6 +13,11 @@ class RunScriptApis {
     const data = { script };
     return axiosClient.post<any, IResponse>(url, data);
   };
+
+  getSampleCode = () => {
+    const url = '/run-code/';
+    return axiosClient.get<any, IResponse>(url);
+  }
 }
 
 const runScriptApis = new RunScriptApis();
